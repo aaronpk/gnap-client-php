@@ -31,8 +31,14 @@ $request = [
     ],
   ],
   'access_token' => [
-    'label' => 'token1',
-    'acecss' => ['foo'],
+    [
+      'label' => 'token1',
+      'access' => ['foo'],
+    ],
+    [
+      'label' => 'token2',
+      'access' => ['bar'],
+    ]
   ],
   'interact' => [
     'redirect' => true,
@@ -50,18 +56,24 @@ if(isset($response['interact'])) {
   echo "Please open this URL in your browser to authorize the application\n";
   echo $response['interact']['redirect']."\n";
 
+  print_r($response);
+
+  #readline("Press enter to continue");
 
   $tokenResponse = null;
 
   $continue = $response['continue'];
   while($continue && !isset($response['access_token'])) {
     echo "Polling: ".$continue['uri']." with AT ".$continue['access_token']['value']."\n";
-    $tokenResponse = signedRequest($continue['uri'], '', $continue['access_token']['value']);
+    $response = signedRequest($continue['uri'], '', $continue['access_token']['value']);
+    print_r($response);
+
+    #readline("Press enter to continue");
     sleep(1);
-    $continue = $tokenResponse['continue'] ?? false;
+    $continue = $response['continue'] ?? false;
   }
 
-  print_r($tokenResponse);
+  print_r($response);
 
 }
 
@@ -80,7 +92,8 @@ function signedRequest($url, $body, $accessToken=null) {
   ];
 
   if($accessToken) {
-    $jwsHeader['at_hash'] = base64_url_encode(hash('sha256', $accessToken, true));
+    $hash = hash('sha256', $accessToken, true);
+    $jwsHeader['at_hash'] = base64_url_encode(substr($hash, 0, strlen($hash) / 2));
   }
 
   $algorithmManager = new AlgorithmManager([
@@ -110,12 +123,13 @@ function signedRequest($url, $body, $accessToken=null) {
     $headers[] = 'Authorization: GNAP ' . $accessToken;
   }
 
+  echo "Making request: $url\n";
   $ch = curl_init($url);
   curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
   curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
   curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
   $response = curl_exec($ch);
-  #echo "Response code " . curl_getinfo($ch, CURLINFO_HTTP_CODE) . "\n";
+  echo "Response code " . curl_getinfo($ch, CURLINFO_HTTP_CODE) . "\n";
   return json_decode($response, true);
 }
 
