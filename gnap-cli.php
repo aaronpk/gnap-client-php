@@ -41,8 +41,7 @@ $request = [
     ]
   ],
   'interact' => [
-    'redirect' => true,
-    'user_code' => true,
+    'start' => ['redirect', 'user_code' ]
   ],
 ];
 
