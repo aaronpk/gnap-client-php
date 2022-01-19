@@ -8,23 +8,20 @@ use Jose\Component\Core\AlgorithmManager;
 use Jose\Component\Signature\Algorithm\ES256;
 use Jose\Component\Signature\Serializer\CompactSerializer;
 
-# Generate an EC256 key:
-# openssl ecparam -genkey -name prime256v1 -noout -out ec256-key.pem
-
 $keyFilename = 'ec256-key.pem';
 
 $jwk = JWKFactory::createFromKeyFile($keyFilename);
 $kid = $keyFilename;
 
 
-$txEndpoint = 'http://host.docker.internal:9834/api/as/transaction';
+$txEndpoint = 'https://xyz-as.herokuapp.com/api/as/transaction';
 
 
 $request = [
   'client' => [
     'key' => [
       'proof' => 'jwsd',
-      'jwk' => $jwk->toPublic()
+      'jwk' => $jwk->toPublic()->all()
     ],
     'display' => [
       'name' => 'PHP CLI',
@@ -41,13 +38,13 @@ $request = [
     ]
   ],
   'interact' => [
-    'start' => ['redirect', 'user_code' ]
+    'start' => ['redirect', 'user_code']
   ],
 ];
 
 $public = $jwk->toPublic()->all();
 $public['kid'] = $kid;
-
+$request['client']['key']['jwk']['kid'] = $kid;
 
 $response = signedRequest($txEndpoint, json_encode($request));
 
@@ -57,7 +54,7 @@ if(isset($response['interact'])) {
 
   print_r($response);
 
-  #readline("Press enter to continue");
+  readline("Press enter to continue");
 
   $tokenResponse = null;
 
@@ -81,41 +78,44 @@ if(isset($response['interact'])) {
 function signedRequest($url, $body, $accessToken=null) {
   global $jwk, $kid;
 
+  // https://datatracker.ietf.org/doc/html/draft-ietf-gnap-core-protocol#section-7.3.3
   $jwsHeader = [
-    'b64' => false,
-    'crit' => ['b64'],
-    'alg' => 'ES256',
     'kid' => $kid,
-    'htu' => $url,
+    'alg' => 'ES256',
+    'typ' => 'gnap-binding+jwsd',
     'htm' => 'POST',
+    'uri' => $url,
+    'created' => time(),
   ];
 
   if($accessToken) {
     $hash = hash('sha256', $accessToken, true);
-    $jwsHeader['at_hash'] = base64_url_encode(substr($hash, 0, strlen($hash) / 2));
+    $jwsHeader['ath'] = base64_url_encode(substr($hash, 0, strlen($hash) / 2));
   }
 
   $algorithmManager = new AlgorithmManager([
       new ES256(),
   ]);
 
+  print_r($jwsHeader);
+  echo $body."\n\n";
+  $body_hash = base64_url_encode(hash('sha256', $body, true));
+  echo $body_hash."\n\n";
+
   $jwsBuilder = new JWSBuilder($algorithmManager);
   $jws = $jwsBuilder->create()
-    ->withPayload($body)
+    ->withEncodedPayload($body_hash)
     ->addSignature($jwk, $jwsHeader)
     ->build();
 
   $serializer = new CompactSerializer();
   $token = $serializer->serialize($jws);
 
-  $header = substr($token, 0, strpos($token, '.'));
-  $signature = substr($token, strrpos($token, '.')+1);
-
-  $detachedJWS = $header . ".." . $signature;
+  echo $token."\n\n";
 
   $headers = [
     'Content-Type: application/json',
-    'Detached-JWS: ' . $detachedJWS,
+    'Detached-JWS: ' . $token,
   ];
 
   if($accessToken) {
