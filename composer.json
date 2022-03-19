@@ -1,10 +1,9 @@
 {
     "require": {
-        "web-token/jwt-easy": "^2.2",
-        "web-token/jwt-core": "^2.2",
-        "web-token/jwt-key-mgmt": "^2.2",
-        "web-token/jwt-signature": "^2.2",
-        "web-token/jwt-util-ecc": "^2.2",
-        "web-token/jwt-signature-algorithm-ecdsa": "^2.2"
+        "phpseclib/phpseclib": "~3.0",
+        "bakame/http-structured-fields": "^0.1.0",
+        "web-token/jwt-key-mgmt": "^3.0",
+        "web-token/jwt-signature": "^3.0",
+        "predis/predis": "^1.1"
     }
 }
