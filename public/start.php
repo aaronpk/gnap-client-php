@@ -28,9 +28,9 @@ $response = $client->start([
       ]
     ]
   ],
-  // "subject" => [
-  //   "sub_id_formats" => [ "iss_sub", "opaque" ],
-  // ]
+  "subject" => [
+    "sub_id_formats" => [ "iss_sub", "opaque" ],
+  ]
 ]);
 
 

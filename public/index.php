@@ -17,7 +17,7 @@ if(isset($_GET['logout'])) {
 
 if(isset($_SESSION['access_token'])) {
   echo '<h2>Logged In</h2>';
-  #echo '<p>' . $_SESSION['name'] . '</p>';
+  echo '<p>Subject ID: ' . $_SESSION['sub'] . '</p>';
   echo '<p>Access Token:</p>';
   echo '<pre>'; print_r($_SESSION['access_token']); echo '</pre>';
   echo '<p><a href="/?logout">Log Out</a></p>';

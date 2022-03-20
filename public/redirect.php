@@ -31,6 +31,8 @@ $response = $client->post($_SESSION['continue']['uri'], [
 if(isset($response['access_token'])) {
 
   $_SESSION['access_token'] = array_filter_recursive($response['access_token']);
+  $_SESSION['subject']  = $response['subject'];
+  $_SESSION['sub'] = GNAPClient::subject_id($response['subject']['sub_ids'], 'opaque')['id'];
 
   echo '<p>Success!</p>';
   echo '<p>Response from AS:</p>';
@@ -41,6 +43,7 @@ if(isset($response['access_token'])) {
 
 } else {
   echo '<p>Error getting access token</p>';
+  echo '<p><a href="/?logout">Start Over</a></p>';
   echo '<pre>';
   print_r($response);
   echo '</pre>';

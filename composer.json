@@ -5,7 +5,8 @@
         "web-token/jwt-key-mgmt": "^3.0",
         "web-token/jwt-signature": "^3.0",
         "predis/predis": "^1.1",
-        "vlucas/phpdotenv": "^5.4"
+        "vlucas/phpdotenv": "^5.4",
+        "bacon/bacon-qr-code": "^2.0"
     },
     "autoload": {
         "files": [

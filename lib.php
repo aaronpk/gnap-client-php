@@ -1,6 +1,9 @@
 <?php
 use Dotenv\Dotenv;
 
+use BaconQrCode\Renderer\PlainTextRenderer;
+use BaconQrCode\Writer;
+
 // Load .env file if exists
 $dotenv = Dotenv::createImmutable(__DIR__);
 if(file_exists(__DIR__.'/.env')) {
@@ -21,3 +24,12 @@ function array_filter_recursive($input) {
   return array_filter($input); 
 } 
 
+class QRCodeCLI {
+
+  public static function generate($text) {
+    $renderer = new PlainTextRenderer();
+    $writer = new Writer($renderer);
+    return $writer->writeString($text);
+  }
+
+}

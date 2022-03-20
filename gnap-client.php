@@ -161,4 +161,12 @@ class GNAPClient {
       ],
     ];
   }
+
+  public static function subject_id($subjects, string $format='opaque') {
+    foreach($subjects as $subject) {
+      if($subject['format'] == $format) {
+        return $subject;
+      }
+    }
+  }
 }
