@@ -30,13 +30,14 @@ $response = $client->post($_SESSION['continue']['uri'], [
 
 if(isset($response['access_token'])) {
 
-  $_SESSION['access_token'] = $response['access_token'];
+  $_SESSION['access_token'] = array_filter_recursive($response['access_token']);
 
-  echo '<p>Logged In</p>';
-  echo '<p><a href="/">Continue</a></p>';
+  echo '<p>Success!</p>';
+  echo '<p>Response from AS:</p>';
   echo '<pre>';
-  print_r($response);
+  print_r(array_filter_recursive($response));
   echo '</pre>';
+  echo '<p><a href="/">Continue</a></p>';
 
 } else {
   echo '<p>Error getting access token</p>';

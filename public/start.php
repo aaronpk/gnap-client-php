@@ -36,7 +36,8 @@ $response = $client->start([
 
 if(isset($response['interact']['redirect'])) {
 
-  echo "<pre>"; print_r($response); echo "</pre>";
+  echo '<p>Response from AS:</p>';
+  echo "<pre>"; print_r(array_filter_recursive($response)); echo "</pre>";
   echo '<a href="'.$response['interact']['redirect'].'">Continue to AS</a>';
 
 	$_SESSION['continue'] = $response['continue'];
