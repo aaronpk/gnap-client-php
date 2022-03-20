@@ -1,3 +1,4 @@
 vendor/
 *.pem
 public-key.json
+.env

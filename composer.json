@@ -4,6 +4,13 @@
         "bakame/http-structured-fields": "^0.1.0",
         "web-token/jwt-key-mgmt": "^3.0",
         "web-token/jwt-signature": "^3.0",
-        "predis/predis": "^1.1"
+        "predis/predis": "^1.1",
+        "vlucas/phpdotenv": "^5.4"
+    },
+    "autoload": {
+        "files": [
+            "lib.php",
+            "gnap-client.php"
+        ]
     }
 }

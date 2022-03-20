@@ -2,12 +2,9 @@
 require('vendor/autoload.php');
 
 use phpseclib3\Crypt\RSA;
-use Bakame\Http\StructuredFields;
 use Jose\Component\KeyManagement\JWKFactory;
+use Bakame\Http\StructuredFields;
 use Jose\Component\Core\JWK;
-
-define('CLIENT_NAME', 'PHP CLI');
-define('SIG_METHOD', 'pss');
 
 if(!isset($argv[1])) {
   echo "usage: php sig.php action\n";
@@ -16,10 +13,6 @@ if(!isset($argv[1])) {
 
 $redis = new \Predis\Client();
 $redis->connect();
-
-$privateKeyFilename = 'private.pem';
-$gnapASEndpoint = 'https://gnap-as.herokuapp.com/api/as/transaction';
-#$gnapASEndpoint = 'http://31.133.128.121:9834/api/as/transaction';
 
 switch($argv[1]) {
 
@@ -30,22 +23,22 @@ switch($argv[1]) {
     echo (string)$private."\n";
     echo (string)$public."\n";
 
-    file_put_contents($privateKeyFilename, $private);
-    file_put_contents('public.pem', $public);
+    file_put_contents($_ENV['PRIVATE_KEY_FILENAME'], $private);
+    file_put_contents($_ENV['PUBLIC_KEY_FILENAME'], $public);
 
-    $jwk = JWKFactory::createFromKeyFile($privateKeyFilename);
+    $jwk = JWKFactory::createFromKeyFile($_ENV['PRIVATE_KEY_FILENAME']);
     $publicJSON = json_encode($jwk->toPublic()->all(), JSON_PRETTY_PRINT+JSON_UNESCAPED_SLASHES);
-    file_put_contents('public-key.json', $publicJSON);
+    file_put_contents($_ENV['JWK_FILENAME'], $publicJSON);
 
     break;
 
   case 'start':
     
-    $client = new GNAPClient($privateKeyFilename, CLIENT_NAME, SIG_METHOD);
+    $client = GNAPClient::create();
     
-    $response = $client->post($gnapASEndpoint, [
+    $response = $client->post($_ENV['GNAP_AS_ENDPOINT'], [
       'interact' => [
-        'start' => ['redirect', 'user_code']
+        'start' => ['redirect']
       ],
       'access_token' => [
         'access' => [
@@ -76,7 +69,7 @@ switch($argv[1]) {
       die("No interaction pending\n");
     }
     
-    $client = new GNAPClient($privateKeyFilename, CLIENT_NAME, SIG_METHOD);
+    $client = GNAPClient::create();
     
     $response = $client->post($pending['continue']['uri'], null, [
       'Authorization' => 'GNAP '.$pending['continue']['access_token']['value'],
@@ -111,9 +104,9 @@ class GNAPClient {
     }
     $this->jwk = JWKFactory::createFromKeyFile($this->privateKeyFile);
   }
-  
-  public function setClientName(string $name) {
-    $this->name = $name;
+
+  public static function create() {
+    return new GNAPClient($_ENV['PRIVATE_KEY_FILENAME'], $_ENV['CLIENT_NAME'], $_ENV['SIGNATURE_METHOD']);
   }
   
   public function get(string $uri, array $headers=[]) {
@@ -126,7 +119,6 @@ class GNAPClient {
   
   public function post(string $uri, array|null $params, array $headers=[]) {
     $createdAt = time();
-    #$createdAt = 1647699014;
 
     $messageSignatureBase = [
       '@method' => 'POST',
