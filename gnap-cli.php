@@ -34,8 +34,8 @@ switch($argv[1]) {
   case 'start':
     
     $client = GNAPClient::create();
-    
-    $response = $client->post($_ENV['GNAP_AS_ENDPOINT'], [
+
+    $response = $client->start([
       'interact' => [
         'start' => ['redirect']
       ],

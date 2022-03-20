@@ -35,6 +35,14 @@ class GNAPClient {
 
   }
 
+  # Start a new GNAP transaction
+  public function start(array $params) {
+    # Include the client key and name in the request
+    $params['client'] = $this->_clientProperties();
+
+    return $this->post($_ENV['GNAP_AS_ENDPOINT'], $params);
+  }
+
   # https://www.ietf.org/archive/id/draft-ietf-gnap-core-protocol-09.html#name-http-message-signing
   
   public function post(string $uri, array|null $params, array $headers=[]) {
@@ -46,7 +54,6 @@ class GNAPClient {
     ];
     
     if($params) {
-      $params['client'] = $this->_clientProperties();
       $requestBody = json_encode($params);
       $bodyDigest = StructuredFields\ByteSequence::fromDecoded(hash('sha256', $requestBody, true));
       $bodyDigestValue = StructuredFields\Dictionary::fromPairs([['sha-256', $bodyDigest]])->toHttpValue();
@@ -137,8 +144,8 @@ class GNAPClient {
     //   die();
     // }
     // 
-    echo "Response\n";
-    echo $response."\n\n";
+    // echo "Response\n";
+    // echo $response."\n\n";
 
     return json_decode($response, true);
   }
